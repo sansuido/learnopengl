@@ -1,0 +1,16 @@
+name: learnopengl
+description: learnopengl.com for Dart
+version: 1.0.0
+homepage: https://github.com/sansuido/learnopengl
+repository: https://github.com/sansuido/learnopengl
+
+environment:
+  sdk: '>=2.13.4 <3.0.0'
+
+dependencies:
+  ffi: ^1.1.2
+  glew: ^1.0.0
+  glfw3: ^1.0.0
+  image: ^3.0.2
+  sdl2: ^1.0.10
+  vector_math: ^2.1.0
