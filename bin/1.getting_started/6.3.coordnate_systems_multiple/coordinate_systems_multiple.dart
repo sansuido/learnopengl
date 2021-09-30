@@ -8,8 +8,8 @@ import 'package:vector_math/vector_math.dart';
 import '../../shader_m.dart';
 
 // settings
-var SCR_WIDTH = 800;
-var SCR_HEIGHT = 600;
+final SCR_WIDTH = 800;
+final SCR_HEIGHT = 600;
 
 int main() {
   // glfw: initialize and configure

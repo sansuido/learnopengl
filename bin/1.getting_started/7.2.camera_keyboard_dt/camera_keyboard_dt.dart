@@ -1,4 +1,4 @@
-// https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/1.getting_started/6.4.coordinate_systems_exercise3/coordinate_systems_exercise3.cpp
+// https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/1.getting_started/7.2.camera_keyboard_dt/camera_keyboard_dt.cpp
 import 'dart:ffi';
 import 'dart:io';
 import 'package:glew/glew.dart';
@@ -6,10 +6,16 @@ import 'package:glfw3/glfw3.dart';
 import 'package:image/image.dart';
 import 'package:vector_math/vector_math.dart';
 import '../../shader_m.dart';
-
 // settings
 final SCR_WIDTH = 800;
 final SCR_HEIGHT = 600;
+// camera
+var gCameraPos = Vector3(0.0, 0.0, 3.0);
+var gCameraFront = Vector3(0.0, 0.0, -1.0);
+var gCameraUp = Vector3(0.0, 1.0, 0.0);
+// timing
+var gDeltaTime = 0.0;
+var gLastFrame = 0.0;
 
 int main() {
   // glfw: initialize and configure
@@ -41,8 +47,8 @@ int main() {
   // build and compile our shader zprogram
   // ------------------------------------
   var ourShader = Shader(
-      vertexFilePath: 'resources/shaders/6.3.coordinate_systems.vs',
-      fragmentFilePath: 'resources/shaders/6.3.coordinate_systems.fs',
+      vertexFilePath: 'resources/shaders/7.2.camera.vs',
+      fragmentFilePath: 'resources/shaders/7.2.camera.fs',
   );
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
@@ -89,7 +95,6 @@ int main() {
       -0.5,  0.5,  0.5,  0.0, 0.0,
       -0.5,  0.5, -0.5,  0.0, 1.0,
   ];
-
   // world space positions of our cubes
   var cubePositions = [
       Vector3( 0.0,  0.0,  0.0),
@@ -111,11 +116,9 @@ int main() {
   // position attribute
   gldtVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeOf<Float>(), 0 * sizeOf<Float>());
   glEnableVertexAttribArray(0);
-  // texture coord atttribute
+  // texture coord attribute
   gldtVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeOf<Float>(), 3 * sizeOf<Float>());
   glEnableVertexAttribArray(1);
-  // load and create a texture 
-  // -------------------------
   // texture 1
   // ---------
   var texture1 = gldtGenTextures(1)[0];
@@ -123,7 +126,7 @@ int main() {
   // set the texture wrapping parameters
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  // set texture filtering parameters
+  // set texture filtering paramters
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   // load image, create texture and generate mipmaps
@@ -137,7 +140,7 @@ int main() {
   // set the texture wrapping parameters
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  // set texture filtering parameters
+  // set texture filtering paramters
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   // load image, create texture and generate mipmaps
@@ -149,16 +152,24 @@ int main() {
   ourShader.use();
   ourShader.setInt('texture1', 0);
   ourShader.setInt('texture2', 1);
+  // pass projection matrix to shader (as projection matrix rarely changes there's no need to do this per frame)
+  // -----------------------------------------------------------------------------------------------------------
+  var projection = makePerspectiveMatrix(radians(45.0), SCR_WIDTH / SCR_HEIGHT, 0.1, 100.0);
+  ourShader.setMatrix4('projection', projection);
   // render loop
   // -----------
   while (glfwWindowShouldClose(window) == GLFW_FALSE) {
+    // per-frame time logic
+    // --------------------
+    var currentFrame = glfwGetTime();
+    gDeltaTime = currentFrame - gLastFrame;
+    gLastFrame = currentFrame;
     // input
     // -----
     processInput(window);
     // render
-    // -----
+    // ------
     glClearColor(0.2, 0.3, 0.3, 1);
-    // also clear the depth buffer now!
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // bind textures on corresponding texture units
     glActiveTexture(GL_TEXTURE0);
@@ -167,23 +178,15 @@ int main() {
     glBindTexture(GL_TEXTURE_2D, texture2);
     // active shader
     ourShader.use();
-    // create transformations
-    // make sure to initialze matrix to identity matrix first
-    var view = Matrix4.identity();
-    var projection = makePerspectiveMatrix(radians(45.0), SCR_WIDTH / SCR_HEIGHT, 0.1, 100.0);
-    view.translate(Vector3(0.0, 0.0, -3.0));
+    // camera/view transformation
+    var view = makeViewMatrix(gCameraPos, gCameraPos + gCameraFront, gCameraUp);
     ourShader.setMatrix4('view', view);
-    ourShader.setMatrix4('projection', projection);
     // render boxes
-    glBindVertexArray(vao);
-    for (var i = 0; i < cubePositions.length; i++) {
+    for (var i = 0; i < 10; i++) {
       var model = Matrix4.identity();
       model.translate(cubePositions[i]);
       var angle = 20.0 * i;
-      if (i % 3 == 0) {
-        angle = glfwGetTime() * 25.0;
-      }
-      model.rotate(Vector3(1.0, 0.3, 0.5), angle);
+      model.rotate(Vector3(1.0, 0.3, 0.5), radians(angle));
       ourShader.setMatrix4('model', model);
       glDrawArrays(GL_TRIANGLES, 0, 36);
     }
@@ -209,11 +212,24 @@ void processInput(Pointer<GLFWwindow>? window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, GLFW_TRUE);
   }
+  var cameraSpeed = 2.5 * gDeltaTime;
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+    gCameraPos += gCameraFront.scaled(cameraSpeed);
+  }
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+    gCameraPos -= gCameraFront.scaled(cameraSpeed);
+  }
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+    gCameraPos -= gCameraFront.cross(gCameraUp).scaled(cameraSpeed);
+  }
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    gCameraPos += gCameraFront.cross(gCameraUp).scaled(cameraSpeed);
+  }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void framebufferSizeCallback(Pointer<GLFWwindow>? window, int width, int height) {
+void framebufferSizeCallback(Pointer<GLFWwindow>? window, int width ,int height) {
   // make sure the viewport matches the new window dimensions; note that width and
   // height will be significantly larger than specified on retina displays.
   glViewport(0, 0, width, height);

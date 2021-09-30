@@ -1,48 +1,70 @@
-// https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/1.getting_started/6.4.coordinate_systems_exercise3/coordinate_systems_exercise3.cpp
+// https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/1.getting_started/7.4.camera_class/camera_class.cpp
 import 'dart:ffi';
 import 'dart:io';
+import 'package:ffi/ffi.dart';
 import 'package:glew/glew.dart';
-import 'package:glfw3/glfw3.dart';
 import 'package:image/image.dart';
+import 'package:sdl2/sdl2.dart';
 import 'package:vector_math/vector_math.dart';
+import '../../camera.dart';
 import '../../shader_m.dart';
 
 // settings
 final SCR_WIDTH = 800;
 final SCR_HEIGHT = 600;
+// camera
+var gCamera = Camera(position: Vector3(0.0, 0.0, 3.0));
+var gLastX = SCR_WIDTH / 2.0;
+var gLastY = SCR_HEIGHT / 2.0;
+var gFirstMouse = true;
+// timing
+// time between current frame and last frame
+var gDeltaTime = 0.0;
+var gLastFrame = 0.0;
 
 int main() {
-  // glfw: initialize and configure
+  // sdl: initialize and configure
   // ------------------------------
-  if (glfwInit() != GLFW_TRUE) {
+  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     return -1;
   }
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  // for apple
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-  // glfw window creation
+  // sdl window creation
   // --------------------
-  var window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, 'LearnOpenGL', nullptr, nullptr);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  var window = SDL_CreateWindow(
+      'LearnOpenGL',
+      SDL_WINDOWPOS_CENTERED,
+      SDL_WINDOWPOS_CENTERED,
+      SCR_WIDTH,
+      SCR_HEIGHT,
+      SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
+  );
   if (window == nullptr) {
-    print('Failed to create GLFW window');
-    glfwTerminate();
+    print('Failed to create SDL window');
+    SDL_Quit();
     return -1;
   }
-  glfwMakeContextCurrent(window);
-  glfwSetFramebufferSizeCallback(window, Pointer.fromFunction(framebufferSizeCallback));
+  var context = SDL_GL_CreateContext(window);
+  if (context == nullptr) {
+    print('Failed to create GL context');
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return -1;
+  }
   // glad: load all OpenGL function pointers
   // ---------------------------------------
-  gladLoadGLLoader(glfwGetProcAddress);
+  gladLoadGLLoader(SDL_GL_GetProcAddressEx);
   // configure global opengl state
   // -----------------------------
   glEnable(GL_DEPTH_TEST);
   // build and compile our shader zprogram
   // ------------------------------------
   var ourShader = Shader(
-      vertexFilePath: 'resources/shaders/6.3.coordinate_systems.vs',
-      fragmentFilePath: 'resources/shaders/6.3.coordinate_systems.fs',
+      vertexFilePath: 'resources/shaders/7.4.camera.vs',
+      fragmentFilePath: 'resources/shaders/7.4.camera.fs',
   );
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
@@ -89,7 +111,6 @@ int main() {
       -0.5,  0.5,  0.5,  0.0, 0.0,
       -0.5,  0.5, -0.5,  0.0, 1.0,
   ];
-
   // world space positions of our cubes
   var cubePositions = [
       Vector3( 0.0,  0.0,  0.0),
@@ -111,7 +132,6 @@ int main() {
   // position attribute
   gldtVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeOf<Float>(), 0 * sizeOf<Float>());
   glEnableVertexAttribArray(0);
-  // texture coord atttribute
   gldtVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeOf<Float>(), 3 * sizeOf<Float>());
   glEnableVertexAttribArray(1);
   // load and create a texture 
@@ -126,7 +146,7 @@ int main() {
   // set texture filtering parameters
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  // load image, create texture and generate mipmaps
+  // load image, crate texture and generate mipmaps
   var image1 = decodeJpg(File('resources/textures/container.jpg').readAsBytesSync());
   gldtTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image1.width, image1.height, 0, GL_RGB, image1.getBytes(format: Format.rgb));
   glGenerateMipmap(GL_TEXTURE_2D);
@@ -140,7 +160,7 @@ int main() {
   // set texture filtering parameters
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  // load image, create texture and generate mipmaps
+  // load image, crate texture and generate mipmaps
   var image2 = decodePng(File('resources/textures/awesomeface.png').readAsBytesSync())!;
   gldtTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image2.width, image2.height, 0, GL_RGBA, image2.getBytes());
   glGenerateMipmap(GL_TEXTURE_2D);
@@ -151,70 +171,110 @@ int main() {
   ourShader.setInt('texture2', 1);
   // render loop
   // -----------
-  while (glfwWindowShouldClose(window) == GLFW_FALSE) {
-    // input
-    // -----
-    processInput(window);
-    // render
-    // -----
+  var quit = false;
+  while (quit == false) {
+    // per-frame time logic
+    // --------------------
+    var currentFrame = SDL_GetTicks() / 1000;
+    gDeltaTime = currentFrame - gLastFrame;
+    gLastFrame = currentFrame;
     glClearColor(0.2, 0.3, 0.3, 1);
-    // also clear the depth buffer now!
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // bind textures on corresponding texture units
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture1);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture2);
-    // active shader
+    // activate shader
     ourShader.use();
-    // create transformations
-    // make sure to initialze matrix to identity matrix first
-    var view = Matrix4.identity();
-    var projection = makePerspectiveMatrix(radians(45.0), SCR_WIDTH / SCR_HEIGHT, 0.1, 100.0);
-    view.translate(Vector3(0.0, 0.0, -3.0));
-    ourShader.setMatrix4('view', view);
+    // pass projection matrix to shader (note that in this case it could change every frame)
+    var projection = makePerspectiveMatrix(radians(gCamera.zoom), SCR_WIDTH / SCR_HEIGHT, 0.1, 100.0);
     ourShader.setMatrix4('projection', projection);
-    // render boxes
+    // camera/view transformation
+    var view = gCamera.getViewMatrix();
+    ourShader.setMatrix4('view', view);
+    // render boxed
     glBindVertexArray(vao);
-    for (var i = 0; i < cubePositions.length; i++) {
+    for (var i = 0; i < 10; i++) {
+      // calculate the model matrix for each object and pass it to shader before drawing
       var model = Matrix4.identity();
       model.translate(cubePositions[i]);
       var angle = 20.0 * i;
-      if (i % 3 == 0) {
-        angle = glfwGetTime() * 25.0;
-      }
-      model.rotate(Vector3(1.0, 0.3, 0.5), angle);
+      model.rotate(Vector3(1.0, 0.3, 0.5), radians(angle));
       ourShader.setMatrix4('model', model);
       glDrawArrays(GL_TRIANGLES, 0, 36);
     }
-    // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+    // sdl: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
     // -------------------------------------------------------------------------------
-    glfwSwapBuffers(window);
-    glfwPollEvents();
+    SDL_GL_SwapWindow(window);
+    var event = calloc<SDL_Event>();
+    while (SDL_PollEvent(event) != 0) {
+      switch (event.type) {
+        case SDL_QUIT:
+          quit = true;
+          break;
+        case SDL_KEYDOWN:
+          var movementValue = gDeltaTime * 100;
+          switch (event.key.keysym.ref.sym) {
+            case SDLK_ESCAPE:
+              quit = true;
+              break;
+            case SDLK_w:
+              gCamera.processKeyboard(CameraMovement.forward, movementValue);
+              break;
+            case SDLK_s:
+              gCamera.processKeyboard(CameraMovement.backward, movementValue);
+              break;
+            case SDLK_a:
+              gCamera.processKeyboard(CameraMovement.left, movementValue);
+              break;
+            case SDLK_d:
+              gCamera.processKeyboard(CameraMovement.right, movementValue);
+              break;
+          }
+          break;
+        // sdl: whenever the window size changed (by OS or user resize) this callback function executes
+        // --------------------------------------------------------------------------------------------
+        case SDL_WINDOWEVENT:
+          if (event.window.ref.event == SDL_WINDOWEVENT_RESIZED) {
+            glViewport(0, 0, event.window.ref.data1, event.window.ref.data2);
+          }
+          break;
+        // sdl: whenever the mouse moves, this callback is called
+        // ------------------------------------------------------
+        case SDL_MOUSEMOTION:
+          var xpos = event.motion.ref.x.toDouble();
+          var ypos = event.motion.ref.y.toDouble();
+          if (gFirstMouse) {
+            gLastX = xpos;
+            gLastY = ypos;
+            gFirstMouse = false;
+          }
+          var xoffset = xpos - gLastX;
+          // reversed since y-coordinates go from bottom to top
+          var yoffset = gLastY - ypos;
+          gLastX = xpos;
+          gLastY = ypos;
+          gCamera.processMouseMovement(xoffset, yoffset);
+          break;
+        // sdl: whenever the mouse scroll wheel scrolls, this callback is called
+        // ---------------------------------------------------------------------
+        case SDL_MOUSEWHEEL:
+          gCamera.processMouseScroll(event.wheel.ref.y.toDouble());
+          break;
+      }
+    }
+    calloc.free(event);
   }
   // optional: de-allocate all resources once they've outlived their purpose:
   // ------------------------------------------------------------------------
   gldtDeleteTextures([texture1, texture2]);
   gldtDeleteVertexArrays([vao]);
   gldtDeleteBuffers([vbo]);
-  // glfw: terminate, clearing all previously allocated GLFW resources.
-  // ------------------------------------------------------------------
-  glfwTerminate();
+  // sdl: terminate, clearing all previously allocated SDL resources.
+  // ----------------------------------------------------------------
+  SDL_GL_DeleteContext(context);
+  SDL_DestroyWindow(window);
+  SDL_Quit();
   return 0;
-}
-
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
-void processInput(Pointer<GLFWwindow>? window) {
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-    glfwSetWindowShouldClose(window, GLFW_TRUE);
-  }
-}
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebufferSizeCallback(Pointer<GLFWwindow>? window, int width, int height) {
-  // make sure the viewport matches the new window dimensions; note that width and
-  // height will be significantly larger than specified on retina displays.
-  glViewport(0, 0, width, height);
 }
