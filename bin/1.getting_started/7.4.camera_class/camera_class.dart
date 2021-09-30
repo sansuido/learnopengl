@@ -168,7 +168,6 @@ int main() {
     var currentFrame = glfwGetTime();
     gDeltaTime = currentFrame - gLastFrame;
     gLastFrame = currentFrame;
-    print(gDeltaTime);
     // input
     // -----
     processInput(window);
