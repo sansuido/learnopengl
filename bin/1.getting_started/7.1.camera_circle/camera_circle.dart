@@ -9,8 +9,8 @@ import 'package:vector_math/vector_math.dart';
 import '../../shader_m.dart';
 
 // settings
-final SCR_WIDTH = 800;
-final SCR_HEIGHT = 600;
+const gScrWidth = 800;
+const gScrHeight = 600;
 
 int main() {
   // glfw: initialize and configure
@@ -25,14 +25,16 @@ int main() {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   // glfw window creation
   // --------------------
-  var window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, 'LearnOpenGL', nullptr, nullptr);
+  var window =
+      glfwCreateWindow(gScrWidth, gScrHeight, 'LearnOpenGL', nullptr, nullptr);
   if (window == nullptr) {
     print('Failed to create GLFW window');
     glfwTerminate();
     return -1;
   }
   glfwMakeContextCurrent(window);
-  glfwSetFramebufferSizeCallback(window, Pointer.fromFunction(framebufferSizeCallback));
+  glfwSetFramebufferSizeCallback(
+      window, Pointer.fromFunction(framebufferSizeCallback));
   // glad: load all OpenGL function pointers
   // ---------------------------------------
   gladLoadGLLoader(glfwGetProcAddress);
@@ -42,66 +44,205 @@ int main() {
   // build and compile our shader zprogram
   // ------------------------------------
   var ourShader = Shader(
-      vertexFilePath: 'resources/shaders/7.1.camera.vs',
-      fragmentFilePath: 'resources/shaders/7.1.camera.fs',
+    vertexFilePath: 'resources/shaders/7.1.camera.vs',
+    fragmentFilePath: 'resources/shaders/7.1.camera.fs',
   );
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
   var vertices = [
-      -0.5, -0.5, -0.5,  0.0, 0.0,
-       0.5, -0.5, -0.5,  1.0, 0.0,
-       0.5,  0.5, -0.5,  1.0, 1.0,
-       0.5,  0.5, -0.5,  1.0, 1.0,
-      -0.5,  0.5, -0.5,  0.0, 1.0,
-      -0.5, -0.5, -0.5,  0.0, 0.0,
-
-      -0.5, -0.5,  0.5,  0.0, 0.0,
-       0.5, -0.5,  0.5,  1.0, 0.0,
-       0.5,  0.5,  0.5,  1.0, 1.0,
-       0.5,  0.5,  0.5,  1.0, 1.0,
-      -0.5,  0.5,  0.5,  0.0, 1.0,
-      -0.5, -0.5,  0.5,  0.0, 0.0,
-
-      -0.5,  0.5,  0.5,  1.0, 0.0,
-      -0.5,  0.5, -0.5,  1.0, 1.0,
-      -0.5, -0.5, -0.5,  0.0, 1.0,
-      -0.5, -0.5, -0.5,  0.0, 1.0,
-      -0.5, -0.5,  0.5,  0.0, 0.0,
-      -0.5,  0.5,  0.5,  1.0, 0.0,
-
-       0.5,  0.5,  0.5,  1.0, 0.0,
-       0.5,  0.5, -0.5,  1.0, 1.0,
-       0.5, -0.5, -0.5,  0.0, 1.0,
-       0.5, -0.5, -0.5,  0.0, 1.0,
-       0.5, -0.5,  0.5,  0.0, 0.0,
-       0.5,  0.5,  0.5,  1.0, 0.0,
-
-      -0.5, -0.5, -0.5,  0.0, 1.0,
-       0.5, -0.5, -0.5,  1.0, 1.0,
-       0.5, -0.5,  0.5,  1.0, 0.0,
-       0.5, -0.5,  0.5,  1.0, 0.0,
-      -0.5, -0.5,  0.5,  0.0, 0.0,
-      -0.5, -0.5, -0.5,  0.0, 1.0,
-
-      -0.5,  0.5, -0.5,  0.0, 1.0,
-       0.5,  0.5, -0.5,  1.0, 1.0,
-       0.5,  0.5,  0.5,  1.0, 0.0,
-       0.5,  0.5,  0.5,  1.0, 0.0,
-      -0.5,  0.5,  0.5,  0.0, 0.0,
-      -0.5,  0.5, -0.5,  0.0, 1.0,
+    -0.5,
+    -0.5,
+    -0.5,
+    0.0,
+    0.0,
+    0.5,
+    -0.5,
+    -0.5,
+    1.0,
+    0.0,
+    0.5,
+    0.5,
+    -0.5,
+    1.0,
+    1.0,
+    0.5,
+    0.5,
+    -0.5,
+    1.0,
+    1.0,
+    -0.5,
+    0.5,
+    -0.5,
+    0.0,
+    1.0,
+    -0.5,
+    -0.5,
+    -0.5,
+    0.0,
+    0.0,
+    -0.5,
+    -0.5,
+    0.5,
+    0.0,
+    0.0,
+    0.5,
+    -0.5,
+    0.5,
+    1.0,
+    0.0,
+    0.5,
+    0.5,
+    0.5,
+    1.0,
+    1.0,
+    0.5,
+    0.5,
+    0.5,
+    1.0,
+    1.0,
+    -0.5,
+    0.5,
+    0.5,
+    0.0,
+    1.0,
+    -0.5,
+    -0.5,
+    0.5,
+    0.0,
+    0.0,
+    -0.5,
+    0.5,
+    0.5,
+    1.0,
+    0.0,
+    -0.5,
+    0.5,
+    -0.5,
+    1.0,
+    1.0,
+    -0.5,
+    -0.5,
+    -0.5,
+    0.0,
+    1.0,
+    -0.5,
+    -0.5,
+    -0.5,
+    0.0,
+    1.0,
+    -0.5,
+    -0.5,
+    0.5,
+    0.0,
+    0.0,
+    -0.5,
+    0.5,
+    0.5,
+    1.0,
+    0.0,
+    0.5,
+    0.5,
+    0.5,
+    1.0,
+    0.0,
+    0.5,
+    0.5,
+    -0.5,
+    1.0,
+    1.0,
+    0.5,
+    -0.5,
+    -0.5,
+    0.0,
+    1.0,
+    0.5,
+    -0.5,
+    -0.5,
+    0.0,
+    1.0,
+    0.5,
+    -0.5,
+    0.5,
+    0.0,
+    0.0,
+    0.5,
+    0.5,
+    0.5,
+    1.0,
+    0.0,
+    -0.5,
+    -0.5,
+    -0.5,
+    0.0,
+    1.0,
+    0.5,
+    -0.5,
+    -0.5,
+    1.0,
+    1.0,
+    0.5,
+    -0.5,
+    0.5,
+    1.0,
+    0.0,
+    0.5,
+    -0.5,
+    0.5,
+    1.0,
+    0.0,
+    -0.5,
+    -0.5,
+    0.5,
+    0.0,
+    0.0,
+    -0.5,
+    -0.5,
+    -0.5,
+    0.0,
+    1.0,
+    -0.5,
+    0.5,
+    -0.5,
+    0.0,
+    1.0,
+    0.5,
+    0.5,
+    -0.5,
+    1.0,
+    1.0,
+    0.5,
+    0.5,
+    0.5,
+    1.0,
+    0.0,
+    0.5,
+    0.5,
+    0.5,
+    1.0,
+    0.0,
+    -0.5,
+    0.5,
+    0.5,
+    0.0,
+    0.0,
+    -0.5,
+    0.5,
+    -0.5,
+    0.0,
+    1.0,
   ];
   // world space positions of our cubes
   var cubePositions = [
-      Vector3( 0.0,  0.0,  0.0),
-      Vector3( 2.0,  5.0, -15.0),
-      Vector3(-1.5, -2.2, -2.5),
-      Vector3(-3.8, -2.0, -12.3),
-      Vector3 (2.4, -0.4, -3.5),
-      Vector3(-1.7,  3.0, -7.5),
-      Vector3( 1.3, -2.0, -2.5),
-      Vector3( 1.5,  2.0, -2.5),
-      Vector3( 1.5,  0.2, -1.5),
-      Vector3(-1.3,  1.0, -1.5),
+    Vector3(0.0, 0.0, 0.0),
+    Vector3(2.0, 5.0, -15.0),
+    Vector3(-1.5, -2.2, -2.5),
+    Vector3(-3.8, -2.0, -12.3),
+    Vector3(2.4, -0.4, -3.5),
+    Vector3(-1.7, 3.0, -7.5),
+    Vector3(1.3, -2.0, -2.5),
+    Vector3(1.5, 2.0, -2.5),
+    Vector3(1.5, 0.2, -1.5),
+    Vector3(-1.3, 1.0, -1.5),
   ];
   var vao = gldtGenVertexArrays(1)[0];
   var vbo = gldtGenBuffers(1)[0];
@@ -109,12 +250,14 @@ int main() {
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   gldtBufferFloat(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
   // position attribute
-  gldtVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeOf<Float>(), 0 * sizeOf<Float>());
+  gldtVertexAttribPointer(
+      0, 3, GL_FLOAT, GL_FALSE, 5 * sizeOf<Float>(), 0 * sizeOf<Float>());
   glEnableVertexAttribArray(0);
   // texture coor attribute
-  gldtVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeOf<Float>(), 3 * sizeOf<Float>());
+  gldtVertexAttribPointer(
+      1, 2, GL_FLOAT, GL_FALSE, 5 * sizeOf<Float>(), 3 * sizeOf<Float>());
   glEnableVertexAttribArray(1);
-  // load and create a texture 
+  // load and create a texture
   // -------------------------
   // texture 1
   // ---------
@@ -126,8 +269,10 @@ int main() {
   // set texture filtering parameters
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  var image1 = decodeJpg(File('resources/textures/container.jpg').readAsBytesSync());
-  gldtTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image1.width, image1.height, 0, GL_RGB, image1.getBytes(format: Format.rgb));
+  var image1 =
+      decodeJpg(File('resources/textures/container.jpg').readAsBytesSync())!;
+  gldtTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image1.width, image1.height, 0,
+      GL_RGB, image1.getBytes(order: ChannelOrder.rgb));
   glGenerateMipmap(GL_TEXTURE_2D);
   // texture 2
   // ---------
@@ -139,9 +284,11 @@ int main() {
   // set texture filtering parameters
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  var image2 = decodePng(File('resources/textures/awesomeface.png').readAsBytesSync())!;
+  var image2 =
+      decodePng(File('resources/textures/awesomeface.png').readAsBytesSync())!;
   // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
-  gldtTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image2.width, image2.height, 0, GL_RGBA, image2.getBytes());
+  gldtTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image2.width, image2.height, 0,
+      GL_RGBA, image2.getBytes());
   glGenerateMipmap(GL_TEXTURE_2D);
   // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
   // -------------------------------------------------------------------------------------------
@@ -150,7 +297,8 @@ int main() {
   ourShader.setInt('texture2', 1);
   // pass projection matrix to shader (as projection matrix rarely changes there's no need to do this per frame)
   // -----------------------------------------------------------------------------------------------------------
-  var projection = makePerspectiveMatrix(radians(45.0), SCR_WIDTH / SCR_HEIGHT, 0.1, 100.0);
+  var projection =
+      makePerspectiveMatrix(radians(45.0), gScrWidth / gScrHeight, 0.1, 100.0);
   ourShader.setMatrix4('projection', projection);
   // render loop
   // -----------
@@ -174,7 +322,8 @@ int main() {
     var radius = 10.0;
     var camX = sin(glfwGetTime()) * radius;
     var camZ = cos(glfwGetTime()) * radius;
-    var view = makeViewMatrix(Vector3(camX, 0.0, camZ), Vector3(0.0, 0.0, 0.0), Vector3(0.0, 1.0, 0.0));
+    var view = makeViewMatrix(Vector3(camX, 0.0, camZ), Vector3(0.0, 0.0, 0.0),
+        Vector3(0.0, 1.0, 0.0));
     ourShader.setMatrix4('view', view);
     // render boxes
     glBindVertexArray(vao);
@@ -205,7 +354,7 @@ int main() {
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(Pointer<GLFWwindow>? window) {
+void processInput(Pointer<GLFWwindow> window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, GLFW_TRUE);
   }
@@ -213,7 +362,8 @@ void processInput(Pointer<GLFWwindow>? window) {
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void framebufferSizeCallback(Pointer<GLFWwindow>? window, int width, int height) {
+void framebufferSizeCallback(
+    Pointer<GLFWwindow> window, int width, int height) {
   // make sure the viewport matches the new window dimensions; note that width and
   // height will be significantly larger than specified on retina displays.
   glViewport(0, 0, width, height);

@@ -4,8 +4,8 @@ import 'package:glew/glew.dart';
 import 'package:glfw3/glfw3.dart';
 
 //settings
-final SCR_WIDTH = 800;
-final SCR_HEIGHT = 600;
+const gScrWidth = 800;
+const gScrHeight = 600;
 
 int main() {
   // glfw: initialize and configure
@@ -20,14 +20,16 @@ int main() {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   // glfw window creation
   // --------------------
-  var window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, 'LearnOpenGL', nullptr, nullptr);
+  var window =
+      glfwCreateWindow(gScrWidth, gScrHeight, 'LearnOpenGL', nullptr, nullptr);
   if (window == nullptr) {
     print('Failed to create GLFW window');
     glfwTerminate();
     return -1;
   }
   glfwMakeContextCurrent(window);
-  glfwSetFramebufferSizeCallback(window, Pointer.fromFunction(framebufferSizeCallback));
+  glfwSetFramebufferSizeCallback(
+      window, Pointer.fromFunction(framebufferSizeCallback));
   // glad: load all OpenGL function pointers
   // ---------------------------------------
   gladLoadGLLoader(glfwGetProcAddress);
@@ -54,7 +56,7 @@ int main() {
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(Pointer<GLFWwindow>? window) {
+void processInput(Pointer<GLFWwindow> window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, GLFW_TRUE);
   }
@@ -62,7 +64,8 @@ void processInput(Pointer<GLFWwindow>? window) {
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void framebufferSizeCallback(Pointer<GLFWwindow>? window, int width, int height) {
+void framebufferSizeCallback(
+    Pointer<GLFWwindow> window, int width, int height) {
   // make sure the viewport matches the new window dimensions; note that width and
   // height will be significantly larger than specified on retina displays.
   glViewport(0, 0, width, height);

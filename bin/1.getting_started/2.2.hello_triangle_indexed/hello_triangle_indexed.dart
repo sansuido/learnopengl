@@ -4,23 +4,31 @@ import 'package:glew/glew.dart';
 import 'package:glfw3/glfw3.dart';
 
 // settings
-final SCR_WIDTH = 800;
-final SCR_HEIGHT = 600;
+const gScrWidth = 800;
+const gScrHeight = 600;
 
-var gVertexShaderSource =
-'#version 330 core' '\n'
-'layout (location = 0) in vec3 aPos;' '\n'
-'void main()' '\n'
-'{' '\n'
-'    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);' '\n'
-'}';
-var gFragmentShaderSource =
-'#version 330 core' '\n'
-'out vec4 FragColor;' '\n'
-'void main()' '\n'
-'{' '\n'
-'    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);' '\n'
-'}';
+var gVertexShaderSource = '#version 330 core'
+    '\n'
+    'layout (location = 0) in vec3 aPos;'
+    '\n'
+    'void main()'
+    '\n'
+    '{'
+    '\n'
+    '    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);'
+    '\n'
+    '}';
+var gFragmentShaderSource = '#version 330 core'
+    '\n'
+    'out vec4 FragColor;'
+    '\n'
+    'void main()'
+    '\n'
+    '{'
+    '\n'
+    '    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);'
+    '\n'
+    '}';
 
 int main() {
   // glfw: initialize and configure
@@ -35,14 +43,16 @@ int main() {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   // glfw window creation
   // --------------------
-  var window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, 'LearnOpenGL', nullptr, nullptr);
+  var window =
+      glfwCreateWindow(gScrWidth, gScrHeight, 'LearnOpenGL', nullptr, nullptr);
   if (window == nullptr) {
     print('Failed to create GLFW window');
     glfwTerminate();
     return -1;
   }
   glfwMakeContextCurrent(window);
-  glfwSetFramebufferSizeCallback(window, Pointer.fromFunction(framebufferSizeCallback));
+  glfwSetFramebufferSizeCallback(
+      window, Pointer.fromFunction(framebufferSizeCallback));
   // glad: load all OpenGL function pointers
   // ---------------------------------------
   gladLoadGLLoader(glfwGetProcAddress);
@@ -89,15 +99,15 @@ int main() {
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
   var vertices = [
-       0.5,  0.5,  0.0, // top right
-       0.5, -0.5,  0.0, // bottom right
-      -0.5, -0.5,  0.0, // bottom left
-      -0.5,  0.5,  0.0, // top left
+    0.5, 0.5, 0.0, // top right
+    0.5, -0.5, 0.0, // bottom right
+    -0.5, -0.5, 0.0, // bottom left
+    -0.5, 0.5, 0.0, // top left
   ];
   // note that we start from 0!
   var indices = [
-      0, 1, 3,  // first Triangle
-      1, 2, 3,  // second Triangle
+    0, 1, 3, // first Triangle
+    1, 2, 3, // second Triangle
   ];
   var vao = gldtGenVertexArrays(1)[0];
   var vbo = gldtGenBuffers(1)[0];
@@ -108,10 +118,11 @@ int main() {
   gldtBufferFloat(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   gldtBufferUint32(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
-  gldtVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeOf<Float>(), 0 * sizeOf<Float>());
+  gldtVertexAttribPointer(
+      0, 3, GL_FLOAT, GL_FALSE, 3 * sizeOf<Float>(), 0 * sizeOf<Float>());
   glEnableVertexAttribArray(0);
   // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-  glBindBuffer(GL_ARRAY_BUFFER, 0); 
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   // remember: do NOT unbind the EBO while a VAO is active as the bound element buffer object IS stored in the VAO; keep the EBO bound.
   //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -139,13 +150,13 @@ int main() {
     gldtDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 * sizeOf<Uint32>());
     // no need to unbind it every time
     //glBindVertexArray(0);
-    
+
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
     // -------------------------------------------------------------------------------
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
-  
+
   // ------------------------------------------------------------------------
   gldtDeleteVertexArrays([vao]);
   gldtDeleteBuffers([vbo, ebo]);
@@ -158,7 +169,7 @@ int main() {
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(Pointer<GLFWwindow>? window) {
+void processInput(Pointer<GLFWwindow> window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, GLFW_TRUE);
   }
@@ -166,8 +177,9 @@ void processInput(Pointer<GLFWwindow>? window) {
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void framebufferSizeCallback(Pointer<GLFWwindow>? window, int width, int height) {
-  // make sure the viewport matches the new window dimensions; note that width and 
+void framebufferSizeCallback(
+    Pointer<GLFWwindow> window, int width, int height) {
+  // make sure the viewport matches the new window dimensions; note that width and
   // height will be significantly larger than specified on retina displays.
   glViewport(0, 0, width, height);
 }

@@ -6,10 +6,10 @@ import 'package:vector_math/vector_math.dart';
 class Shader {
   var id = 0;
   Shader(
-      {String? vertexShaderSource = null,
-      String? vertexFilePath = null,
-      String? fragmentShaderSource = null,
-      String? fragmentFilePath = null}) {
+      {String? vertexShaderSource,
+      String? vertexFilePath,
+      String? fragmentShaderSource,
+      String? fragmentFilePath}) {
     id = glCreateProgram();
     if (vertexShaderSource == null && vertexFilePath != null) {
       vertexShaderSource = File(vertexFilePath).readAsStringSync();
@@ -78,25 +78,28 @@ class Shader {
   }
 
   void setMatrix2(String name, Matrix2 value) {
-    gldtUniformMatrix2fv(glGetUniformLocation(id, name), 1, GL_FALSE, value.storage);
+    gldtUniformMatrix2fv(
+        glGetUniformLocation(id, name), 1, GL_FALSE, value.storage);
   }
 
   void setMatrix3(String name, Matrix3 value) {
-    gldtUniformMatrix3fv(glGetUniformLocation(id, name), 1, GL_FALSE, value.storage);
+    gldtUniformMatrix3fv(
+        glGetUniformLocation(id, name), 1, GL_FALSE, value.storage);
   }
 
   void setMatrix4(String name, Matrix4 value) {
-    gldtUniformMatrix4fv(glGetUniformLocation(id, name), 1, GL_FALSE, value.storage);
+    gldtUniformMatrix4fv(
+        glGetUniformLocation(id, name), 1, GL_FALSE, value.storage);
   }
 
   bool _checkCompileErrors(int shader, String type) {
     var success = GL_FALSE;
-    var bufSize;
+    var bufSize = 0;
     switch (type) {
       case 'PROGRAM':
         success = gldtGetProgramiv(shader, GL_LINK_STATUS);
         if (success != GL_TRUE) {
-          print('ERROR::PROGRAM_LINKING_ERROR of type: ' + type);
+          print('ERROR::PROGRAM_LINKING_ERROR of type: ' '$type');
           bufSize = gldtGetProgramiv(shader, GL_INFO_LOG_LENGTH);
           if (bufSize > 1) {
             print(gldtGetProgramInfoLog(shader, bufSize));
@@ -106,7 +109,7 @@ class Shader {
       default:
         success = gldtGetShaderiv(shader, GL_COMPILE_STATUS);
         if (success != GL_TRUE) {
-          print('ERROR::SHADER_COMPILATION_ERROR of type: ' + type);
+          print('ERROR::SHADER_COMPILATION_ERROR of type: ' '$type');
           bufSize = gldtGetShaderiv(shader, GL_INFO_LOG_LENGTH);
           if (bufSize > 1) {
             print(gldtGetShaderInfoLog(shader, bufSize));

@@ -9,48 +9,43 @@ enum CameraMovement {
   left,
   right,
 }
+
 // Default camera values
-const YAW = -90.0;
-const PITCH = 0.0;
-const SPEED = 2.5;
-const SENSITIVITY = 0.1;
-const ZOOM = 45.0;
+const gYaw = -90.0;
+const gPitch = 0.0;
+const gSpeed = 2.5;
+const gSensitivity = 0.1;
+const gZoom = 45.0;
 
 class Camera {
-  var position;
+  var position = Vector3(0.0, 0.0, 0.0);
   var front = Vector3(0.0, 0.0, -1.0);
-  var up;
-  var right;
-  var worldUp;
-  var yaw;
-  var pitch;
-  var movementSpeed = SPEED;
-  var mouseSensitivity = SENSITIVITY;
-  var zoom = ZOOM;
+  Vector3? up;
+  Vector3? right;
+  var worldUp = Vector3(0.0, 1.0, 0.0);
+  late double yaw;
+  late double pitch;
+  var movementSpeed = gSpeed;
+  var mouseSensitivity = gSensitivity;
+  var zoom = gZoom;
   Camera({
-    position: null,
-    up: null,
-    yaw: YAW,
-    pitch: PITCH,
+    position,
+    worldUp,
+    this.yaw = gYaw,
+    this.pitch = gPitch,
   }) {
     if (position != null) {
       this.position = position;
-    } else {
-      this.position = Vector3(0.0, 0.0, 0.0);
     }
-    if (up != null) {
-      this.worldUp = up;
-    } else {
-      this.worldUp = Vector3(0.0, 1.0, 0.0);
+    if (worldUp != null) {
+      this.worldUp = worldUp;
     }
-    this.yaw = yaw;
-    this.pitch = pitch;
     updateCameraVectors();
   }
 
   // returns the view matrix calculated using Euler Angles and the LookAt Matrix
   Matrix4 getViewMatrix() {
-    return makeViewMatrix(position, position + front, up);
+    return makeViewMatrix(position, position + front, up!);
   }
 
   // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
@@ -64,16 +59,16 @@ class Camera {
         position -= front.scaled(velocity);
         break;
       case CameraMovement.left:
-        position -= right.scaled(velocity);
+        position -= right!.scaled(velocity);
         break;
       case CameraMovement.right:
-        position += right.scaled(velocity);
+        position += right!.scaled(velocity);
         break;
     }
   }
 
   void processMouseMovement(double xoffset, double yoffset,
-      {constrainPitch: true}) {
+      {constrainPitch = true}) {
     xoffset *= mouseSensitivity;
     yoffset *= mouseSensitivity;
     yaw += xoffset;
@@ -109,6 +104,6 @@ class Camera {
     front.normalize();
     // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
     right = front.cross(worldUp).normalized();
-    up = right.cross(front).normalized();
+    up = right!.cross(front).normalized();
   }
 }
