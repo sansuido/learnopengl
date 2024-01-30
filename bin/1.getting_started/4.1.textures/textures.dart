@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:glew/glew.dart';
 import 'package:glfw3/glfw3.dart';
 import 'package:image/image.dart';
-import '../../shader_s.dart';
+import 'package:learnopengl/shader_s.dart';
 
 // settings
 const gScrWidth = 800;

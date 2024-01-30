@@ -37,26 +37,26 @@ packages:
     dependency: "direct main"
     description:
       name: ffi
-      sha256: ed5337a5660c506388a9f012be0288fb38b49020ce2b45fe1f8b8323fe429f99
+      sha256: "7bf0adc28a23d395f19f3f1eb21dd7cfd1dd9f8e1c50051c069122e6853bc878"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.2"
+    version: "2.1.0"
   glew:
     dependency: "direct main"
     description:
       name: glew
-      sha256: d2dd1acfdf03c4e5ff5993305d655ff82db17ec07ab8bcaa07aa23869409d80c
+      sha256: "665d88f1d3b072ae074c7004fad72700733ed89bcce852a7e381b0e72cd080bc"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "1.2.0"
   glfw3:
     dependency: "direct main"
     description:
       name: glfw3
-      sha256: "7ce0dbe263422b2f60bda22f8e8d236b4e53b70303683ea8fe5894e8e32bcc54"
+      sha256: "69741d3134ea01524e920c5bf4b8fad65462efc33d0278cf7a7c464903002206"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.2"
+    version: "1.2.0"
   image:
     dependency: "direct main"
     description:
@@ -109,10 +109,10 @@ packages:
     dependency: "direct main"
     description:
       name: sdl2
-      sha256: c25b39d7e980ab877bfb5081e1376041422c4012ebdf5f80e62dea707498a61d
+      sha256: c66db8d207decfd8253caea9a0a944a079f69f5095b1ccda7a6d100d0f3fb689
       url: "https://pub.dev"
     source: hosted
-    version: "1.5.3"
+    version: "1.6.0"
   typed_data:
     dependency: transitive
     description:
@@ -138,4 +138,4 @@ packages:
     source: hosted
     version: "6.3.0"
 sdks:
-  dart: ">=3.0.7 <4.0.0"
+  dart: ">=3.2.5 <4.0.0"
