@@ -1,3 +1,6 @@
+## 1.2.1
+- [add] Add sdl3 sources.
+
 ## 1.2.0
 - [update] ffi: ^2.1.0, glew: ^1.2.0, glfw3: ^1.2.0, sdl2: ^1.6.0
 - [update] Renamed sources *_sdl.dart to *_sdl2.dart

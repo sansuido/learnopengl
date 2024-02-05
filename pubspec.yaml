@@ -12,5 +12,6 @@ dependencies:
   glew: ^1.2.0
   glfw3: ^1.2.0
   image: ^4.0.17
-  sdl2: ^1.6.0
+  sdl2: ^1.7.0
+  sdl3: ^0.1.1
   vector_math: ^2.1.4
